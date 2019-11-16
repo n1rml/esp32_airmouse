@@ -43,7 +43,8 @@ keyboard when the make monitor console is running (see Espressiv IDF: https://gi
 
 ## Progress
  - Able to connect to a windows pc and operate via stdin (make monitor).
- - Able to move cursor using only the gyro values (in Degrees per Second, from the MPU driver), the movement is very random and not accurate at all.
+  ~~- Able to move cursor using only the gyro values (in Degrees per Second, from the MPU driver), the movement is very random and not accurate at all.~~
+ - Using both gyro & accelerometer data with stable mouse movement.
  
  
 any advice on how to correctly implement the MPU6050 values is highly appreciated.

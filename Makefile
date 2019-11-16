@@ -5,8 +5,6 @@
 
 PROJECT_NAME := esp32_airmouse
 
-# Path to MPU Driver
-EXTRA_COMPONENT_DIRS += $(abspath ../..)
 # Path to I2Cbus
 EXTRA_COMPONENT_DIRS += ${HOME}/esp/libraries/I2Cbus
 
