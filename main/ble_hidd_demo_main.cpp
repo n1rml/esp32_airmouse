@@ -37,7 +37,7 @@
 #include "keyboard.h"
 
 /** demo mouse speed */
-#define MOUSE_SPEED 5
+#define MOUSE_SPEED 30
 #define MAX_CMDLEN  100
 
 #define EXT_UART_TAG "EXT_UART"
@@ -266,23 +266,69 @@ void mpu_poll(void *pvParameter)
         gyroDPS = mpud::gyroDegPerSec(gyroRaw, mpud::GYRO_FS_500DPS);
 
 		if(HID_kbdmousejoystick_isConnected() > 0) {
-			if ( (gx - gyroDPS[0]) <= -1  )
+			if ( (gx - gyroDPS[0]) <= -0.5 && (gz - gyroDPS[2]) <= -0.5  )
 			{
-				mouseCmd.x = 0;
-				mouseCmd.y = -MOUSE_SPEED;
+				mouseCmd.x = -5;
+				mouseCmd.y = -5;
 				mouseCmd.buttons = 0;
 				mouseCmd.wheel = 0;
 				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
-				// ESP_LOGI(CONSOLE_UART_TAG,"mouse: up");
 			}
-			else if ( (gx - gyroDPS[0]) >= 1 )
+			else if ( (gx - gyroDPS[0]) >= 0.5 && (gz - gyroDPS[2]) >= 0.5  )
 			{
-				mouseCmd.x = 0;
-				mouseCmd.y = MOUSE_SPEED;
+				mouseCmd.x = 5;
+				mouseCmd.y = 5;
 				mouseCmd.buttons = 0;
 				mouseCmd.wheel = 0;
 				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
-				// ESP_LOGI(CONSOLE_UART_TAG,"mouse: dn");
+			}
+			else if ( (gx - gyroDPS[0]) >= 0.5 && (gz - gyroDPS[2]) <= -0.5  )
+			{
+				mouseCmd.x = -5;
+				mouseCmd.y = 5;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
+			}
+			else if ( (gx - gyroDPS[0]) <= -0.5 && (gz - gyroDPS[2]) >= 0.5  )
+			{
+				mouseCmd.x = 5;
+				mouseCmd.y = -5;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
+			}
+			else if ( (gx - gyroDPS[0]) >= 0.5 )
+			{
+				mouseCmd.x = 0;
+				mouseCmd.y = 5;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
+			}
+			else if ( (gx - gyroDPS[0]) <= -0.5 )
+			{
+				mouseCmd.x = 0;
+				mouseCmd.y = -5;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
+			}
+			else if ( (gz - gyroDPS[2]) >= 0.5 )
+			{
+				mouseCmd.x = 5;
+				mouseCmd.y = 0;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
+			}
+			else if ( (gz - gyroDPS[2]) <= -0.5 )
+			{
+				mouseCmd.x = -5;
+				mouseCmd.y = 0;
+				mouseCmd.buttons = 0;
+				mouseCmd.wheel = 0;
+				xQueueSend(mouse_q,(void *)&mouseCmd, (TickType_t) 0);
 			}
 			
 		}
@@ -291,7 +337,7 @@ void mpu_poll(void *pvParameter)
 		gx = gyroDPS[0];
 		gy = gyroDPS[1];
 		gz = gyroDPS[2];
-        vTaskDelay(8 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
 
