@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := mk32_build1
+PROJECT_NAME := esp32_airmouse
 
 # Path to MPU Driver
 EXTRA_COMPONENT_DIRS += $(abspath ../..)
