@@ -92,6 +92,7 @@ esp_err_t HID_kbdmousejoystick_rawMouse(uint8_t *a, uint8_t len);
 /** @brief Is the BLE currently connected?
  * @return 0 if not connected, 1 if connected */  
 uint8_t HID_kbdmousejoystick_isConnected(void);
+bool connectedForReal(void);
 
 
 /** @brief One mouse command (report) to be sent via BLE mouse profile

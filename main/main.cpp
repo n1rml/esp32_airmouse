@@ -26,7 +26,7 @@
 #include "keyboard.h"
 
 /** demo mouse speed */
-#define MOUSE_SPEED 30
+#define MOUSE_SPEED 20
 #define MAX_CMDLEN 100
 
 #define EXT_UART_TAG "EXT_UART"
@@ -89,13 +89,6 @@ struct cmdBuf
 	int bufferLength;
 	uint8_t buf[MAX_CMDLEN];
 };
-
-uint8_t uppercase(uint8_t c)
-{
-	if ((c >= 'a') && (c <= 'z'))
-		return (c - 'a' + 'A');
-	return (c);
-}
 
 char character;
 mouse_command_t mouseCmd;
@@ -203,6 +196,10 @@ void uart_console(void *pvParameters)
 				enable_air = false;
 				ESP_LOGI(CONSOLE_UART_TAG, "air disable");
 				break;
+			case 'g':
+				ESP_LOGI(CONSOLE_UART_TAG, "console uart disable");
+				vTaskDelete(NULL);
+				break;
 			default:
 				ESP_LOGI(CONSOLE_UART_TAG, "received: %d", character);
 				break;
@@ -281,7 +278,7 @@ void mpu_poll(void *pvParameter)
 			horzValue = roll - horzZero;
 			vertZero = yaw;
 			horzZero = roll;
-			if (HID_kbdmousejoystick_isConnected() && enable_air)
+			if (connectedForReal() && enable_air)
 			{
 				if (vertValue != 0)
 				{
@@ -357,7 +354,7 @@ extern "C" void app_main()
 	ret = nvs_get_u8(my_handle, "locale", &config.locale);
 	if (ret != ESP_OK || config.locale >= LAYOUT_MAX)
 	{
-		ESP_LOGE("MAIN", "error reading NVS - locale, setting to US_INTERNATIONAL");
+		// ESP_LOGE("MAIN", "error reading NVS - locale, setting to US_INTERNATIONAL");
 		config.locale = LAYOUT_US_INTERNATIONAL;
 	}
 	else
@@ -376,8 +373,9 @@ extern "C" void app_main()
 
 	// now start the tasks for processing UART input and indicator LED
 	xTaskCreate(&task_initI2C, "mpu_task", 2048, NULL, configMAX_PRIORITIES, NULL);
-	xTaskCreate(&uart_console, "console", 4096, NULL, configMAX_PRIORITIES, NULL);
+	xTaskCreatePinnedToCore(&uart_console, "console", 4096, NULL, configMAX_PRIORITIES, NULL,0);
 	xTaskCreate(&blink_task, "blink", 4096, NULL, configMAX_PRIORITIES, NULL);
 	vTaskDelay(1000/portTICK_PERIOD_MS);
-	xTaskCreate(&mpu_poll, "mpu_loop", 8192, NULL, configMAX_PRIORITIES, NULL);
+	xTaskCreatePinnedToCore(&mpu_poll, "mpu_loop", 8192, NULL, configMAX_PRIORITIES, NULL,1);
+	
 }

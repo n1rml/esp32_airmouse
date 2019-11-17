@@ -53,6 +53,7 @@ QueueHandle_t mouse_q;
 
 /// @brief Is the BLE currently connected?
 uint8_t isConnected = 0;
+bool connForReal = false;
 
 ///@brief Is Keyboard interface active?
 uint8_t activateKeyboard = 0;
@@ -345,7 +346,7 @@ class MouseTask : public Task {
         //wait for a new mouse command
         if(xQueueReceive(mouse_q,&cmd,10000))
         {
-          ESP_LOGI(LOG_TAG,"Mouse received: %d/%d/%d/%d",cmd.buttons,cmd.x,cmd.y,cmd.wheel);
+          // ESP_LOGI(LOG_TAG,"Mouse received: %d/%d/%d/%d",cmd.buttons,cmd.x,cmd.y,cmd.wheel);
           uint8_t a[4] = {0,0,0,0};
           a[0] = cmd.buttons;
           a[1] = cmd.x;
@@ -411,6 +412,7 @@ class CBs: public BLEServerCallbacks {
     BLE2902* desc;
     
     isConnected = 0;
+    connForReal = false;
     
     //disable notifications for input service, suggested by chegewara to
     //reduce power & memory usage
@@ -479,6 +481,7 @@ class CB_Security: public BLESecurityCallbacks {
       ESP_LOGI(LOG_TAG, "address type = %d", auth_cmpl.addr_type);
     }
       ESP_LOGI(LOG_TAG, "pair status = %s", auth_cmpl.success ? "success" : "fail");
+      connForReal = true;
   }
   
   // You need to confirm the given pin
@@ -662,7 +665,7 @@ class BLE_HOG: public Task {
 		pSecurity->setCapability(ESP_IO_CAP_NONE);
 		//pSecurity->setCapability(ESP_IO_CAP_OUT);
 		//pSecurity->setCapability(ESP_IO_CAP_KBDISP);
-		//pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+		pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
 
 		ESP_LOGI(LOG_TAG, "Advertising started!");
     while(1) { delay(1000000); }
@@ -724,6 +727,11 @@ extern "C" {
   uint8_t HID_kbdmousejoystick_isConnected(void)
   {
     return isConnected;
+  }
+
+  bool connectedForReal(void)
+  {
+    return connForReal;
   }
   
   /** @brief Main init function to start HID interface (C interface)
