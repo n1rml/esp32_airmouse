@@ -26,7 +26,7 @@
 #include "keyboard.h"
 
 /** demo mouse speed */
-#define MOUSE_SPEED 10
+#define MOUSE_SPEED 30
 #define MAX_CMDLEN 100
 
 #define EXT_UART_TAG "EXT_UART"
@@ -53,25 +53,7 @@ uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 float yaw = 0.0, pitch = 0.0, roll = 0.0;
 float vertZero = 0, horzZero = 0;
 float vertValue, horzValue;
-bool enable_air = false;
-
-// void update_config()
-// {
-// 	nvs_handle my_handle;
-// 	esp_err_t err = nvs_open("config_c", NVS_READWRITE, &my_handle);
-// 	if (err != ESP_OK)
-// 		ESP_LOGE("MAIN", "error opening NVS");
-// 	err = nvs_set_str(my_handle, "btname", config.bt_device_name);
-// 	if (err != ESP_OK)
-// 		ESP_LOGE("MAIN", "error saving NVS - bt name");
-// 	err = nvs_set_u8(my_handle, "locale", config.locale);
-// 	if (err != ESP_OK)
-// 		ESP_LOGE("MAIN", "error saving NVS - locale");
-// 	printf("Committing updates in NVS ... ");
-// 	err = nvs_commit(my_handle);
-// 	printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-// 	nvs_close(my_handle);
-// }
+bool enable_air = true;
 
 void sendKeyCode(uint8_t c, keyboard_action type)
 {
@@ -115,42 +97,15 @@ uint8_t uppercase(uint8_t c)
 	return (c);
 }
 
-int get_int(const char *input, int index, int *value)
-{
-	int sign = 1, result = 0, valid = 0;
-
-	while (input[index] == ' ')
-		index++; // skip leading spaces
-	if (input[index] == '-')
-	{
-		sign = -1;
-		index++;
-	}
-	while ((input[index] >= '0') && (input[index] <= '9'))
-	{
-		result = result * 10 + input[index] - '0';
-		valid = 1;
-		index++;
-	}
-	while (input[index] == ' ')
-		index++; // skip trailing spaces
-	if (input[index] == ',')
-		index++; // or a comma
-
-	if (valid)
-	{
-		*value = result * sign;
-		return (index);
-	}
-	return (0);
-}
-
 char character;
 mouse_command_t mouseCmd;
 keyboard_command_t keyboardCmd;
 
 void uart_console(void *pvParameters)
 {
+	char character;
+	mouse_command_t mouseCmd;
+	keyboard_command_t keyboardCmd;
 	//Install UART driver, and get the queue.
 	uart_driver_install(CONSOLE_UART_NUM, UART_FIFO_LEN * 2, UART_FIFO_LEN * 2, 0, NULL, 0);
 
@@ -279,8 +234,9 @@ void blink_task(void *pvParameter)
 	}
 }
 
-void mpu_poll(void *)
+void mpu_poll(void *pvParameter)
 {
+	mouse_command_t mouseCmd;
 	MPU6050 mpu = MPU6050();
 	mpu.initialize();
 	mpu.dmpInitialize();
@@ -344,9 +300,6 @@ void mpu_poll(void *)
 					xQueueSend(mouse_q, (void *)&mouseCmd, (TickType_t)0);
 				}
 			}
-			// printf("YAW: %3.1f, ", ypr[0] * 180 / M_PI);
-			// printf("PITCH: %3.1f, ", ypr[1] * 180 / M_PI);
-			// printf("ROLL: %3.1f \n", ypr[2] * 180 / M_PI);
 		}
 
 		//Best result is to match with DMP refresh rate
