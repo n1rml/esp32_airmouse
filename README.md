@@ -1,30 +1,46 @@
-# ESP32 Bluetooth AirMouse
+# ESP32 Bluetooth Air Mouse
 
 This is my first project on [ESP-IDF Framework](https://github.com/espressif/esp-idf)
 it's based on [esp32_mouse_keyboard by Benjamin Aigner](https://github.com/asterics/esp32_mouse_keyboard) and MPU6050 3-axis gyro and accelerometer.
 
 ### Credits and many thanks to:
 - Benjamin Aigner for his work on implementing HID over BLE on the ESP32: https://github.com/asterics/esp32_mouse_keyboard
-- Paul Stoffregen for the implementation of the keyboard layouts for his Teensyduino project: www.pjrc.com
 - Neil Kolban for his great contributions to the ESP32 SW (in particular the Bluetooth support): https://github.com/nkolban
-- Natanael Rabello for the MPU6050 driver for esp-idf : https://github.com/natanaeljr/esp32-MPU-driver
+- Jeff Rowberg for the MPU6050 library for esp-idf : https://github.com/jrowberg/i2cdevlib/tree/master/ESP32_ESP-IDF
+- Natanael Rabello for I2Cbus driver for esp-idf : https://github.com/natanaeljr/esp32-I2Cbus
 
 ### Prerequisites
+Install ESP-IDF : https://github.com/espressif/esp-idf
 
-Install the I2Cbus and MPU Driver
+**Note**: I use [this](https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip) toolchain under a msys2 environment on Windows 10.
+
+Install the I2Cbus driver
 ```
-I2Cbus:  git clone https://github.com/natanaeljr/esp32-I2Cbus.git I2Cbus
+git clone https://github.com/natanaeljr/esp32-I2Cbus.git I2Cbus
 ```
-**Note**: Edit the I2Cbus driver location in the MAKEFILE.
+**Note**: Edit the I2Cbus driver location in Makefile, or clone the driver directly into your components directory.
 
-Download the repository [here](https://github.com/natanaeljr/esp32-MPU-driver/archive/master.zip),
-or clone it right into your project components directory with the following command.
+### Installation
+Clone the project
+```
+git clone https://github.com/n1rml/esp32_airmouse.git esp32_airmouse
+
+cd esp32_airmouse
+```
+Open menuconfig to set port for your esp32
+```
+make menuconfig
+```
+Flash using
+```
+make flash monitor
+
+or
+
+make -jN flash monitor # replace N with the no. of threads in your computer. build will finish double quick
 
 ```
-git clone https://github.com/natanaeljr/esp32-MPU-driver.git MPUdriver
-``` 
-Follow [this](https://github.com/natanaeljr/esp32-MPU-driver/blob/master/README.md) for detailed instructions on installing the MPU driver (or for using SPIbus instead of I2C).
-
+--------------------------------------------------------------------------
 ## Control via stdin (make monitor)
 
 For basic mouse and keyboard testing, some Bluettooh HID reports can be triggered via the 
@@ -43,8 +59,9 @@ keyboard when the make monitor console is running (see Espressiv IDF: https://gi
 
 ## Progress
  - Able to connect to a windows pc and operate via stdin (make monitor).
-  ~~- Able to move cursor using only the gyro values (in Degrees per Second, from the MPU driver), the movement is very random and not accurate at all.~~
- - Using both gyro & accelerometer data with stable mouse movement.
+ - ~~Able to move cursor using only the gyro values (in Degrees per Second, from the MPU driver), the movement is very random and not accurate at all.~~
+ - Using MPU6050's integrated DMP(Digital Motion Processor) to obtain stable mouse movement data.
+ - Able to control mouse cursor with acceptable accuracy.
  
  
-any advice on how to correctly implement the MPU6050 values is highly appreciated.
+Do report issues, i will gladly fix them.
