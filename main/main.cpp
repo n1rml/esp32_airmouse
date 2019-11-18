@@ -26,7 +26,7 @@
 #include "keyboard.h"
 
 /** demo mouse speed */
-#define MOUSE_SPEED 20
+#define MOUSE_SPEED 30
 #define MAX_CMDLEN 100
 
 #define EXT_UART_TAG "EXT_UART"
@@ -280,7 +280,7 @@ void mpu_poll(void *pvParameter)
 			horzZero = roll;
 			if (connectedForReal() && enable_air)
 			{
-				if (vertValue != 0)
+				if (vertValue != 0 && vertValue < 3)
 				{
 					mouseCmd.x = 0;
 					mouseCmd.y = vertValue * MOUSE_SPEED;
@@ -288,7 +288,7 @@ void mpu_poll(void *pvParameter)
 					mouseCmd.wheel = 0;
 					xQueueSend(mouse_q, (void *)&mouseCmd, (TickType_t)0);
 				}
-				if (horzValue != 0)
+				if (horzValue != 0 && horzValue < 3)
 				{
 					mouseCmd.x = horzValue * MOUSE_SPEED;
 					mouseCmd.y = 0;

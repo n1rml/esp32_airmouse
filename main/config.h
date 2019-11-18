@@ -2,8 +2,8 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define MODULE_ID "ESP32miniBT_v0.1"
-#define GATTS_TAG "MK32"
+#define MODULE_ID "ESP32_airmouse_p1"
+#define GATTS_TAG "41R_p1"
 #define MAX_BT_DEVICENAME_LENGTH 40
 
 // serial port of monitor and for debugging

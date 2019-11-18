@@ -41,27 +41,10 @@ make -jN flash monitor # replace N with the no. of threads in your computer. bui
 
 ```
 --------------------------------------------------------------------------
-## Control via stdin (make monitor)
-
-For basic mouse and keyboard testing, some Bluettooh HID reports can be triggered via the 
-keyboard when the make monitor console is running (see Espressiv IDF: https://github.com/espressif/esp-idf).
-
-
-|Key|Function   |Description|
-|---|-----------|-----------|
-|a  |Mouse left |Move mouse left by 30px |
-|s  |Mouse down |Move mouse down by 30px |
-|d  |Mouse right|Move mouse right by 30px |
-|w  |Mouse up   |Move mouse up by 30px |
-|l  |Click left |Mouse click right |
-|r  |Click right|Mouse click left  |
-|q  |Type 'y'   |just for testing keyboard reports|
 
 ## Progress
- - Able to connect to a windows pc and operate via stdin (make monitor).
- - ~~Able to move cursor using only the gyro values (in Degrees per Second, from the MPU driver), the movement is very random and not accurate at all.~~
  - Using MPU6050's integrated DMP(Digital Motion Processor) to obtain stable mouse movement data.
- - Able to control mouse cursor with acceptable accuracy.
+ - Able to control mouse cursor on Android devices and Windows 10 with decent accuracy (but movements are a little choppy).
  
  
 Do report issues, i will gladly fix them.
