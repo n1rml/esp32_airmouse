@@ -1,7 +1,7 @@
 # ESP32 Bluetooth Air Mouse
 
 This is my first project on [ESP-IDF Framework](https://github.com/espressif/esp-idf)
-it's based on [esp32_mouse_keyboard by Benjamin Aigner](https://github.com/asterics/esp32_mouse_keyboard) and MPU6050 3-axis gyro and accelerometer.
+it's based on [esp32_mouse_keyboard by Benjamin Aigner](https://github.com/asterics/esp32_mouse_keyboard) and MPU6050 6-axis gyro and accelerometer.
 
 ### Credits and many thanks to:
 - Benjamin Aigner for his work on implementing HID over BLE on the ESP32: https://github.com/asterics/esp32_mouse_keyboard
