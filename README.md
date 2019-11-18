@@ -12,7 +12,9 @@ it's based on [esp32_mouse_keyboard by Benjamin Aigner](https://github.com/aster
 ### Prerequisites
 Install ESP-IDF : https://github.com/espressif/esp-idf
 
-**Note**: I use [this](https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip) toolchain under a msys2 environment on Windows 10.
+I use [ESP-IDF v3.3](https://github.com/espressif/esp-idf/releases/tag/v3.3) and [this](https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip) toolchain under a msys2 environment on Windows 10.
+
+**Note** : Using other esp-idf and toolchain versions might lead to unexpected errors.
 
 Install the I2Cbus driver
 ```
