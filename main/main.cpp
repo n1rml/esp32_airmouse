@@ -280,18 +280,10 @@ void mpu_poll(void *pvParameter)
 			horzZero = roll;
 			if (connectedForReal() && enable_air)
 			{
-				if (vertValue != 0 && vertValue < 3)
-				{
-					mouseCmd.x = 0;
-					mouseCmd.y = vertValue * MOUSE_SPEED;
-					mouseCmd.buttons = 0;
-					mouseCmd.wheel = 0;
-					xQueueSend(mouse_q, (void *)&mouseCmd, (TickType_t)0);
-				}
-				if (horzValue != 0 && horzValue < 3)
+				if (vertValue != 0 || horzValue != 0)
 				{
 					mouseCmd.x = horzValue * MOUSE_SPEED;
-					mouseCmd.y = 0;
+					mouseCmd.y = vertValue * MOUSE_SPEED;
 					mouseCmd.buttons = 0;
 					mouseCmd.wheel = 0;
 					xQueueSend(mouse_q, (void *)&mouseCmd, (TickType_t)0);
@@ -302,7 +294,7 @@ void mpu_poll(void *pvParameter)
 		//Best result is to match with DMP refresh rate
 		// Its last value in components/MPU6050/MPU6050_6Axis_MotionApps20.h file line 310
 		// Now its 0x13, which means DMP is refreshed with 10Hz rate
-		vTaskDelay(10 / portTICK_PERIOD_MS);
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	}
 
 	vTaskDelete(NULL);
