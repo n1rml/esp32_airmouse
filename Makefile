@@ -3,10 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := esp32_airmouse
-
-# Path to I2Cbus
-EXTRA_COMPONENT_DIRS += ${HOME}/esp/libraries/I2Cbus
+PROJECT_NAME := esp32_mouse_keyboard
 
 COMPONENT_ADD_INCLUDEDIRS := components/include	\
 								
