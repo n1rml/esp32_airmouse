@@ -26,9 +26,13 @@
 
 #define CONSOLE_UART_TAG "CONSOLE_UART"
 
-//MPU
+//MPU Pins
 #define PIN_SDA 22
 #define PIN_CLK 23
+
+// BUTTON Pins
+#define BUTTON_0 GPIO_NUM_4
+#define BUTTON_1 GPIO_NUM_5
 
 // MPU vars
 Quaternion q;           // [w, x, y, z]         quaternion container
@@ -41,7 +45,6 @@ uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 float yaw = 0.0, pitch = 0.0, roll = 0.0;
 float vertZero = 0, horzZero = 0;
 float vertValue, horzValue;
-bool enable_air = true;
 
 
 static config_data_t config;
@@ -241,6 +244,9 @@ void mpu_poll(void *pvParameter)
 {
 	hid_cmd_t mouseCmd;
 	MPU6050 mpu = MPU6050();
+	gpio_pad_select_gpio(BUTTON_0);
+	gpio_set_direction(BUTTON_0, GPIO_MODE_INPUT);
+
 	mpu.initialize();
 	mpu.dmpInitialize();
 
@@ -305,6 +311,52 @@ void mpu_poll(void *pvParameter)
 	vTaskDelete(NULL);
 }
 
+void button_poll(void *pvParameter)
+{
+	hid_cmd_t mouseCmd;
+	gpio_pad_select_gpio(BUTTON_0);
+	gpio_set_direction(BUTTON_0, GPIO_MODE_INPUT);
+	gpio_pad_select_gpio(BUTTON_1);
+	gpio_set_direction(BUTTON_1, GPIO_MODE_INPUT);
+
+	bool mlb = false, mrb = false;
+
+	while (1)
+	{
+		if (gpio_get_level(BUTTON_0) && !mlb)
+		{
+			// ESP_LOGI("MLB","klik");
+			mouseCmd.cmd[0] = 0x16;
+			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+			mlb = true;
+		}
+		else if (gpio_get_level(BUTTON_0) == 0 && mlb)
+		{
+			// ESP_LOGI("MLB","release");
+			mouseCmd.cmd[0] = 0x19;
+			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+			mlb = false;
+		}
+
+		if (gpio_get_level(BUTTON_1) && !mrb)
+		{
+			// ESP_LOGI("MRB","klik");
+			mouseCmd.cmd[0] = 0x17;
+			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+			mrb = true;
+		}
+		else if (gpio_get_level(BUTTON_1) == 0 && mrb)
+		{
+			// ESP_LOGI("MRB","release");
+			mouseCmd.cmd[0] = 0x1A;
+			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+			mrb = false;
+		}
+		vTaskDelay(25 / portTICK_PERIOD_MS);
+	}
+	vTaskDelete(NULL);
+}
+
 void task_initI2C(void *ignore) {
 	i2c_config_t conf;
 	conf.mode = I2C_MODE_MASTER;
@@ -363,5 +415,6 @@ extern "C" void app_main()
     xTaskCreate(&blink_task, "blink", 4096, NULL, configMAX_PRIORITIES, NULL);
     vTaskDelay(1000/portTICK_PERIOD_MS);
 	xTaskCreate(&mpu_poll, "mpu_loop", 8192, NULL, configMAX_PRIORITIES, NULL);
+	xTaskCreate(&button_poll, "button_loop", 4096, NULL, configMAX_PRIORITIES, NULL);
 }
 
