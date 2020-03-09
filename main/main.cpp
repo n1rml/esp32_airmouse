@@ -21,8 +21,8 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 
 /** demo mouse speed */
-#define MOUSE_SPEED 30
-#define MAX_CMDLEN  100
+#define MOUSE_SPEED 20
+#define SCROLL_SENS 0.5
 
 #define CONSOLE_UART_TAG "CONSOLE_UART"
 
@@ -31,8 +31,9 @@
 #define PIN_CLK 23
 
 // BUTTON Pins
-#define BUTTON_0 GPIO_NUM_4
-#define BUTTON_1 GPIO_NUM_5
+#define BUTTON_0 GPIO_NUM_13
+#define BUTTON_1 GPIO_NUM_25
+#define BUTTON_2 GPIO_NUM_34
 
 // MPU vars
 Quaternion q;           // [w, x, y, z]         quaternion container
@@ -43,19 +44,12 @@ uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 float yaw = 0.0, pitch = 0.0, roll = 0.0;
-float vertZero = 0, horzZero = 0;
-float vertValue, horzValue;
+float vertZero = 0, horzZero = 0, scrlZero = 0;
+float vertValue, horzValue, scrlValue;
 
 
 static config_data_t config;
 QueueHandle_t hid_ble;
-
-struct cmdBuf {
-    int state;
-	int expectedBytes;
-	int bufferLength;
-	uint8_t buf[MAX_CMDLEN];
-} ;
 
 void blink_task(void *pvParameter)
 {
@@ -244,8 +238,9 @@ void mpu_poll(void *pvParameter)
 {
 	hid_cmd_t mouseCmd;
 	MPU6050 mpu = MPU6050();
-	gpio_pad_select_gpio(BUTTON_0);
-	gpio_set_direction(BUTTON_0, GPIO_MODE_INPUT);
+	gpio_pad_select_gpio(BUTTON_2);
+	gpio_set_direction(BUTTON_2, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(BUTTON_2, GPIO_PULLUP_ONLY);
 
 	mpu.initialize();
 	mpu.dmpInitialize();
@@ -288,8 +283,10 @@ void mpu_poll(void *pvParameter)
             roll = ypr[0] /M_PI * 180;
 			vertValue = yaw - vertZero;
 			horzValue = roll - horzZero;
+			scrlValue = pitch - scrlZero;
 			vertZero = yaw;
 			horzZero = roll;
+			scrlValue = pitch;
 			if (halBLEIsConnected())
 			{
 				if (vertValue != 0 || horzValue != 0)
@@ -298,6 +295,13 @@ void mpu_poll(void *pvParameter)
 					mouseCmd.cmd[1] = horzValue * MOUSE_SPEED;
 					mouseCmd.cmd[2] = vertValue * MOUSE_SPEED;
 					xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+				}
+				if (scrlValue != 0 && gpio_get_level(BUTTON_2) == 0)
+				{
+					mouseCmd.cmd[0] = 0x12;
+					mouseCmd.cmd[1] = scrlValue * SCROLL_SENS;
+					xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
+					// ESP_LOGI("SCRL","BOOST");
 				}
 			}
 		}
@@ -316,21 +320,25 @@ void button_poll(void *pvParameter)
 	hid_cmd_t mouseCmd;
 	gpio_pad_select_gpio(BUTTON_0);
 	gpio_set_direction(BUTTON_0, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(BUTTON_0, GPIO_PULLUP_ONLY);
+	// gpio_pullup_dis(BUTTON_0);
 	gpio_pad_select_gpio(BUTTON_1);
 	gpio_set_direction(BUTTON_1, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(BUTTON_1, GPIO_PULLUP_ONLY);
+	// gpio_pullup_dis(BUTTON_1);
 
 	bool mlb = false, mrb = false;
 
 	while (1)
 	{
-		if (gpio_get_level(BUTTON_0) && !mlb)
+		if (!gpio_get_level(BUTTON_0) && !mlb)
 		{
 			// ESP_LOGI("MLB","klik");
 			mouseCmd.cmd[0] = 0x16;
 			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
 			mlb = true;
 		}
-		else if (gpio_get_level(BUTTON_0) == 0 && mlb)
+		else if (gpio_get_level(BUTTON_0) == 1 && mlb)
 		{
 			// ESP_LOGI("MLB","release");
 			mouseCmd.cmd[0] = 0x19;
@@ -338,14 +346,14 @@ void button_poll(void *pvParameter)
 			mlb = false;
 		}
 
-		if (gpio_get_level(BUTTON_1) && !mrb)
+		if (!gpio_get_level(BUTTON_1) && !mrb)
 		{
 			// ESP_LOGI("MRB","klik");
 			mouseCmd.cmd[0] = 0x17;
 			xQueueSend(hid_ble,(void *)&mouseCmd, (TickType_t) 0);
 			mrb = true;
 		}
-		else if (gpio_get_level(BUTTON_1) == 0 && mrb)
+		else if (gpio_get_level(BUTTON_1) == 1 && mrb)
 		{
 			// ESP_LOGI("MRB","release");
 			mouseCmd.cmd[0] = 0x1A;
